@@ -1,0 +1,71 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.0.2'
+	id 'io.spring.dependency-management' version '1.1.0'
+	id "com.palantir.docker" version "0.34.0"
+}
+
+
+group = 'com.microservice'
+version = '0.0.4-SNAPSHOT'
+sourceCompatibility = '17'
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('springCloudVersion', "2022.0.1")
+}
+
+
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	runtimeOnly 'com.h2database:h2'
+	implementation 'org.springframework.cloud:spring-cloud-starter-config'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	//for connecting to naming server
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	//for chain breaker
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+	//Tracing dependencies - To connect to Zipkin which is used for tracing
+	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+	implementation 'io.micrometer:micrometer-observation'
+	//
+	//implementation 'io.micrometer:micrometer-tracing-bom:latest.release'
+	//implementation 'io.micrometer:micrometer-tracing'
+	//implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+	//implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
+	//RabbitMQ
+	implementation 'org.springframework.boot:spring-boot-starter-amqp'
+	//Not sure>> testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	//Not sure>> testImplementation 'org.springframework.amqp:spring-rabbit-test'
+
+}
+
+
+docker {
+	//name "sunilgrao/micorservice-v1-${project.name}:${project.version}"
+	name "${project.name}"
+	dockerfile file('src/docker/Dockerfile')
+	copySpec.from(jar).rename(".*","app.jar")
+	buildArgs(['JAR_FILE': 'app.jar'])
+	buildArgs([BUILD_VERSION: "${project.version}"])
+	pull true
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
