@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.0.2'
 	id 'io.spring.dependency-management' version '1.1.0'
+	id "com.palantir.docker" version "0.34.0"
 }
 
 group = 'com.microservice'
@@ -26,9 +27,9 @@ dependencies {
 	//for connecting to naming server
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	//Tracing dependencies - To connect to Zipkin which is used for tracing
-	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
-	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
-	implementation 'io.micrometer:micrometer-observation'
+	//implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+	//implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+	//implementation 'io.micrometer:micrometer-observation'
 	//---------
 	//>>implementation 'io.micrometer:micrometer-tracing-bom:latest.release'
 	//>>implementation 'io.micrometer:micrometer-tracing'
@@ -37,6 +38,17 @@ dependencies {
 	//---------
 	//RabbitMQ
 	implementation 'org.springframework.boot:spring-boot-starter-amqp'
+}
+
+
+docker {
+	name "sunilgrao/micorservice-v1-${project.name}:${project.version}"
+	//name "${project.name}"
+	dockerfile file('src/docker/Dockerfile')
+	copySpec.from(bootJar)//.rename(".*","app.jar")
+	buildArgs(['JAR_FILE': 'app.jar'])
+	buildArgs([BUILD_VERSION: "${project.version}"])
+	pull true
 }
 
 dependencyManagement {

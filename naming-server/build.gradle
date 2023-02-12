@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.0.2'
 	id 'io.spring.dependency-management' version '1.1.0'
+	id "com.palantir.docker" version "0.34.0"
 }
 
 group = 'com.microservice'
@@ -17,6 +18,16 @@ ext {
 	set('springCloudVersion', "2022.0.1")
 }
 
+docker {
+	name "sunilgrao/micorservice-v1-${project.name}:${project.version}"
+	//name "${project.name}"
+	dockerfile file('src/docker/Dockerfile')
+	copySpec.from(bootJar)//.rename(".*","app.jar")
+	buildArgs(['JAR_FILE': 'app.jar'])
+	buildArgs([BUILD_VERSION: "${project.version}"])
+	pull true
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
@@ -30,6 +41,8 @@ dependencyManagement {
 	}
 }
 
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
+

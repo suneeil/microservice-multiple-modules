@@ -3,11 +3,12 @@ plugins {
 	id 'org.springframework.boot' version '3.0.2'
 	id 'io.spring.dependency-management' version '1.1.0'
 	id "com.palantir.docker" version "0.34.0"
+
 }
 
 
 group = 'com.microservice'
-version = '0.0.4-SNAPSHOT'
+version = '0.0.5-SNAPSHOT'
 sourceCompatibility = '17'
 
 repositories {
@@ -34,9 +35,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
 	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
 	//Tracing dependencies - To connect to Zipkin which is used for tracing
-	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
-	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+	//implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+	//implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
 	implementation 'io.micrometer:micrometer-observation'
+	// to get data >>> http://localhost:8001/actuator/prometheus or http://localhost:8000/actuator/prometheus
+	implementation 'io.micrometer:micrometer-registry-prometheus:1.10.3'
+
 	//
 	//implementation 'io.micrometer:micrometer-tracing-bom:latest.release'
 	//implementation 'io.micrometer:micrometer-tracing'
@@ -51,10 +55,10 @@ dependencies {
 
 
 docker {
-	//name "sunilgrao/micorservice-v1-${project.name}:${project.version}"
-	name "${project.name}"
+	name "sunilgrao/micorservice-v1-${project.name}:${project.version}"
+	//name "${project.name}"
 	dockerfile file('src/docker/Dockerfile')
-	copySpec.from(jar).rename(".*","app.jar")
+	copySpec.from(bootJar)//.rename(".*","app.jar")
 	buildArgs(['JAR_FILE': 'app.jar'])
 	buildArgs([BUILD_VERSION: "${project.version}"])
 	pull true
@@ -69,3 +73,5 @@ dependencyManagement {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+//jar.dependsOn bootJar
